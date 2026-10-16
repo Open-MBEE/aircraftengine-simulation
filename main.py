@@ -45,48 +45,53 @@ def row( symbol, value, unit, description="" ):
     print( text )
 
 
-if __name__ == '__main__':
+# gas models are stateless after construction (pure functions of T/p/...), so
+# one instance is reused across every run_cycle() call instead of rebuilding
+# the polynomial fits (and re-solving the reference state) every time
+_g = gt.Gas()
+_a = gt.Atmosphere()
 
-    g = gt.Gas()
-    a = gt.Atmosphere()
 
-    # ------------------------------------------------------------------------
-    # design parameters
-    # ------------------------------------------------------------------------
+def run_cycle(
+    alt_ft=40e3,        # cruise altitude in ft
+    Ma0=0.85,           # cruise Mach number
+    Do=0.75,            # outer diameter of the compressor face in m
+    Di=0.05,            # diameter of the inlet cone in m
+    AR=2.25,            # compressor area contraction A2 / A3
+    OPR=25,             # overall pressure ratio pt3 / pt2
+    eta_comp=0.88,      # isentropic efficiency
+    mu_bypass=0.3,      # bypass fraction of the compressor exit flow
+    mu_cool=0.01,       # turbine cooling fraction of the inlet flow
+    mu_bleed=0.005,     # cabin bleed fraction of the inlet flow
+    eta_comb=0.95,      # combustion efficiency
+    FAR=0.02,           # fuel-air ratio of the core stream
+    k_aer=10.0,         # aerodynamic (cold) pressure loss parameter
+    k_th=0.5,           # fundamental (hot) pressure loss parameter
+    eta_turb=0.86,      # isentropic efficiency
+    eta_shaft=0.98,     # mechanical efficiency of the shaft
+    T0_override=None,   # replace the standard-atmosphere static temperature
+                        # (ISA-deviation / hot-day study); p0 stays at the
+                        # altitude's standard value, rho0 is recomputed from
+                        # the ideal gas law so mass flow stays consistent
+    verbose=True,
+):
+    """Run the design-point cycle once; return a dict of station and
+    performance quantities. With verbose=True (the default, used by the CLI)
+    it also prints the station-by-station report."""
 
-    # flight condition
-    alt_ft = 40e3        # cruise altitude in ft
-    Ma0    = 0.85        # cruise Mach number
-
-    # geometry
-    Do = 0.75            # outer diameter of the compressor face in m
-    Di = 0.05            # diameter of the inlet cone in m
-    AR = 2.25            # compressor area contraction A2 / A3
-
-    # compressor
-    OPR       = 25       # overall pressure ratio pt3 / pt2
-    eta_comp  = 0.88     # isentropic efficiency
-    mu_bypass = 0.3      # bypass fraction of the compressor exit flow
-    mu_cool   = 0.01     # turbine cooling fraction of the inlet flow
-    mu_bleed  = 0.005    # cabin bleed fraction of the inlet flow
-
-    # combustor
-    eta_comb = 0.95      # combustion efficiency
-    FAR      = 0.02      # fuel-air ratio of the core stream
-    k_aer    = 10.0      # aerodynamic (cold) pressure loss parameter
-    k_th     = 0.5       # fundamental (hot) pressure loss parameter
-
-    # turbine and shaft
-    eta_turb  = 0.86     # isentropic efficiency
-    eta_shaft = 0.98     # mechanical efficiency of the shaft
+    g = _g
+    a = _a
 
     # ------------------------------------------------------------------------
     # station 0 : free stream
     # ------------------------------------------------------------------------
-    station( 0, "free stream" )
+    if verbose : station( 0, "free stream" )
 
     # static state from the standard atmosphere (the model expects m)
     T0, p0, rho0 = a.atm( alt_ft * 0.3048 )
+    if T0_override is not None :
+        T0 = T0_override
+        rho0 = p0 / ( g.R() * T0 )
 
     # velocity and total state; the total pressure follows from an isentropic
     # deceleration to rest
@@ -96,30 +101,32 @@ if __name__ == '__main__':
     Tt0 = g.T( ht0 )
     pt0 = g.isenp( T0, p0, Tt0 )
 
-    row( "T",  T0,       "K" )
-    row( "p",  p0*1e-5,  "bar" )
-    row( "Ma", Ma0,      "-" )
-    row( "u",  u0,       "m/s" )
-    row( "Tt", Tt0,      "K" )
-    row( "pt", pt0*1e-5, "bar" )
+    if verbose :
+        row( "T",  T0,       "K" )
+        row( "p",  p0*1e-5,  "bar" )
+        row( "Ma", Ma0,      "-" )
+        row( "u",  u0,       "m/s" )
+        row( "Tt", Tt0,      "K" )
+        row( "pt", pt0*1e-5, "bar" )
 
     # ------------------------------------------------------------------------
     # station 1 : captured stream tube
     # ------------------------------------------------------------------------
-    station( 1, "captured stream tube" )
+    if verbose : station( 1, "captured stream tube" )
 
     # the engine swallows the stream tube that fits the compressor face; far
     # upstream it is still at free-stream conditions
     A1 = 0.25 * math.pi * Do**2
     dotm1 = rho0 * u0 * A1
 
-    row( "A",  A1,    "m²" )
-    row( "ṁ", dotm1, "kg/s" )
+    if verbose :
+        row( "A",  A1,    "m²" )
+        row( "ṁ", dotm1, "kg/s" )
 
     # ------------------------------------------------------------------------
     # station 2 : compressor face
     # ------------------------------------------------------------------------
-    station( 2, "compressor face" )
+    if verbose : station( 2, "compressor face" )
 
     # the inlet cone blocks part of the cross section, so the flow contracts
     # from A1 to A2 and accelerates slightly; the contraction is isentropic
@@ -133,17 +140,18 @@ if __name__ == '__main__':
     ht2 = ht0
     pt2 = pt0
 
-    row( "A",  A2,       "m²" )
-    row( "T",  T2,       "K" )
-    row( "p",  p2*1e-5,  "bar" )
-    row( "Ma", Ma2,      "-" )
-    row( "Tt", Tt2,      "K" )
-    row( "pt", pt2*1e-5, "bar" )
+    if verbose :
+        row( "A",  A2,       "m²" )
+        row( "T",  T2,       "K" )
+        row( "p",  p2*1e-5,  "bar" )
+        row( "Ma", Ma2,      "-" )
+        row( "Tt", Tt2,      "K" )
+        row( "pt", pt2*1e-5, "bar" )
 
     # ------------------------------------------------------------------------
     # station 3 : compressor exit
     # ------------------------------------------------------------------------
-    station( 3, "compressor exit" )
+    if verbose : station( 3, "compressor exit" )
 
     # total exit state and specific work from the pressure ratio and the
     # isentropic efficiency
@@ -172,18 +180,19 @@ if __name__ == '__main__':
     A3a = A3 * dotm_core / dotm3
     A3b = A3 - A3a
 
-    row( "A",  A3,       "m²" )
-    row( "T",  T3,       "K" )
-    row( "p",  p3*1e-5,  "bar" )
-    row( "Ma", Ma3,      "-" )
-    row( "Tt", Tt3,      "K" )
-    row( "pt", pt3*1e-5, "bar" )
-    row( "P",  Wcomp*1e-6, "MW", "compressor power" )
+    if verbose :
+        row( "A",  A3,       "m²" )
+        row( "T",  T3,       "K" )
+        row( "p",  p3*1e-5,  "bar" )
+        row( "Ma", Ma3,      "-" )
+        row( "Tt", Tt3,      "K" )
+        row( "pt", pt3*1e-5, "bar" )
+        row( "P",  Wcomp*1e-6, "MW", "compressor power" )
 
     # ------------------------------------------------------------------------
     # station 4 : combustor exit
     # ------------------------------------------------------------------------
-    station( 4, "combustor exit" )
+    if verbose : station( 4, "combustor exit" )
 
     # only the core stream is burned; the fuel-air ratio fixes the fuel flow
     dotmf = FAR * dotm_core
@@ -203,18 +212,19 @@ if __name__ == '__main__':
 
     T4, p4, u4, Ma4 = g.static_from_total( Tt4, pt4, dotm4, A4, FAR )
 
-    row( "A",  A4,       "m²" )
-    row( "T",  T4,       "K" )
-    row( "p",  p4*1e-5,  "bar" )
-    row( "Ma", Ma4,      "-" )
-    row( "Tt", Tt4,      "K" )
-    row( "pt", pt4*1e-5, "bar" )
-    row( "ṁf", dotmf,   "kg/s", "fuel flow" )
+    if verbose :
+        row( "A",  A4,       "m²" )
+        row( "T",  T4,       "K" )
+        row( "p",  p4*1e-5,  "bar" )
+        row( "Ma", Ma4,      "-" )
+        row( "Tt", Tt4,      "K" )
+        row( "pt", pt4*1e-5, "bar" )
+        row( "ṁf", dotmf,   "kg/s", "fuel flow" )
 
     # ------------------------------------------------------------------------
     # station 5 : turbine exit
     # ------------------------------------------------------------------------
-    station( 5, "turbine exit" )
+    if verbose : station( 5, "turbine exit" )
 
     # the cooling air mixes in ahead of the turbine at constant total pressure;
     # it dilutes the fuel-air ratio of the mixture
@@ -236,14 +246,15 @@ if __name__ == '__main__':
     Tt5s = g.T( ht5s, FAR5 )
     pt5  = g.isenp( Tt4m, pt4, Tt5s, FAR5 )
 
-    row( "Tt", Tt5,      "K" )
-    row( "pt", pt5*1e-5, "bar" )
-    row( "P",  Wshaft*1e-6, "MW", "shaft power" )
+    if verbose :
+        row( "Tt", Tt5,      "K" )
+        row( "pt", pt5*1e-5, "bar" )
+        row( "P",  Wshaft*1e-6, "MW", "shaft power" )
 
     # ------------------------------------------------------------------------
     # station 7 : core nozzle throat
     # ------------------------------------------------------------------------
-    station( 7, "core nozzle throat" )
+    if verbose : station( 7, "core nozzle throat" )
 
     # the nozzle only chokes if the pressure ratio exceeds the critical value
     gam5 = g.gamma( Tt5, FAR5 )
@@ -266,15 +277,16 @@ if __name__ == '__main__':
     p7 = g.isenp( Tt5, pt5, T7, FAR5 )
     A7 = dotm5 / ( g.rho( T7, p7, FAR5 ) * u7 )
 
-    row( "A",  A7,      "m²" )
-    row( "T",  T7,      "K" )
-    row( "p",  p7*1e-5, "bar" )
-    row( "u",  u7,      "m/s" )
+    if verbose :
+        row( "A",  A7,      "m²" )
+        row( "T",  T7,      "K" )
+        row( "p",  p7*1e-5, "bar" )
+        row( "u",  u7,      "m/s" )
 
     # ------------------------------------------------------------------------
     # station 9 : core nozzle exit
     # ------------------------------------------------------------------------
-    station( 9, "core nozzle exit" )
+    if verbose : station( 9, "core nozzle exit" )
 
     # the divergent section expands the flow isentropically to the ambient
     # pressure (adapted nozzle), which maximizes the thrust
@@ -283,16 +295,17 @@ if __name__ == '__main__':
     u9 = math.sqrt( 2.0 * ( ht5 - g.h( T9, FAR5 ) ) )
     A9 = dotm5 / ( g.rho( T9, p9, FAR5 ) * u9 )
 
-    row( "A",  A9,      "m²" )
-    row( "T",  T9,      "K" )
-    row( "p",  p9*1e-5, "bar" )
-    row( "u",  u9,      "m/s" )
-    row( "Ma", u9/g.c( T9, FAR5 ), "-" )
+    if verbose :
+        row( "A",  A9,      "m²" )
+        row( "T",  T9,      "K" )
+        row( "p",  p9*1e-5, "bar" )
+        row( "u",  u9,      "m/s" )
+        row( "Ma", u9/g.c( T9, FAR5 ), "-" )
 
     # ------------------------------------------------------------------------
     # bypass nozzle
     # ------------------------------------------------------------------------
-    station( "3b", "bypass nozzle exit" )
+    if verbose : station( "3b", "bypass nozzle exit" )
 
     # the bypass stream leaves the engine at compressor exit conditions and
     # expands to ambient pressure through its own adapted nozzle
@@ -300,15 +313,16 @@ if __name__ == '__main__':
     u9b = math.sqrt( 2.0 * ( ht3 - g.h( T9b ) ) )
     A9b = dotm_byp / ( g.rho( T9b, p0 ) * u9b )
 
-    row( "A",  A9b,     "m²" )
-    row( "T",  T9b,     "K" )
-    row( "u",  u9b,     "m/s" )
-    row( "ṁ", dotm_byp, "kg/s" )
+    if verbose :
+        row( "A",  A9b,     "m²" )
+        row( "T",  T9b,     "K" )
+        row( "u",  u9b,     "m/s" )
+        row( "ṁ", dotm_byp, "kg/s" )
 
     # ------------------------------------------------------------------------
     # performance
     # ------------------------------------------------------------------------
-    block( "performance" )
+    if verbose : block( "performance" )
 
     # momentum bookkeeping: both nozzles are adapted, so there is no pressure
     # thrust; the ram drag is charged on the full captured flow, which includes
@@ -326,12 +340,31 @@ if __name__ == '__main__':
     eta_p  = F * u0 / dKE
     eta_o  = eta_th * eta_p
 
-    row( "Fcore", F_core*1e-3, "kN", "gross thrust, core" )
-    row( "Fbyp",  F_byp*1e-3,  "kN", "gross thrust, bypass" )
-    row( "Fram",  F_ram*1e-3,  "kN", "ram drag" )
-    row( "F",     F*1e-3,      "kN", "net thrust" )
-    row( "F/ṁ",  F/dotm1,     "m/s", "specific thrust" )
-    row( "TSFC",  dotmf/F*1e6, "g/(kN·s)", "thrust specific fuel consumption" )
-    row( "ηth",  eta_th,      "-", "thermal efficiency" )
-    row( "ηp",   eta_p,       "-", "propulsive efficiency" )
-    row( "η0",   eta_o,       "-", "overall efficiency" )
+    if verbose :
+        row( "Fcore", F_core*1e-3, "kN", "gross thrust, core" )
+        row( "Fbyp",  F_byp*1e-3,  "kN", "gross thrust, bypass" )
+        row( "Fram",  F_ram*1e-3,  "kN", "ram drag" )
+        row( "F",     F*1e-3,      "kN", "net thrust" )
+        row( "F/ṁ",  F/dotm1,     "m/s", "specific thrust" )
+        row( "TSFC",  dotmf/F*1e6, "g/(kN·s)", "thrust specific fuel consumption" )
+        row( "ηth",  eta_th,      "-", "thermal efficiency" )
+        row( "ηp",   eta_p,       "-", "propulsive efficiency" )
+        row( "η0",   eta_o,       "-", "overall efficiency" )
+
+    return dict(
+        T0=T0, p0=p0, rho0=rho0, u0=u0, Tt0=Tt0, pt0=pt0,
+        A1=A1, dotm1=dotm1,
+        A2=A2, T2=T2, p2=p2, Ma2=Ma2, Tt2=Tt2, pt2=pt2,
+        A3=A3, T3=T3, p3=p3, Ma3=Ma3, Tt3=Tt3, pt3=pt3, Wcomp=Wcomp,
+        A4=A4, T4=T4, p4=p4, Ma4=Ma4, Tt4=Tt4, pt4=pt4, dotmf=dotmf,
+        Tt5=Tt5, pt5=pt5, Wshaft=Wshaft,
+        A7=A7, T7=T7, p7=p7, u7=u7,
+        A9=A9, T9=T9, p9=p9, u9=u9,
+        A9b=A9b, T9b=T9b, u9b=u9b, dotm_byp=dotm_byp,
+        F_core=F_core, F_byp=F_byp, F_ram=F_ram, F=F,
+        TSFC=dotmf/F*1e6, eta_th=eta_th, eta_p=eta_p, eta_o=eta_o,
+    )
+
+
+if __name__ == '__main__':
+    run_cycle()
