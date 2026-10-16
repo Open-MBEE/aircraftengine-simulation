@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Engine Cycle Dashboard</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<h1>Aircraft Engine Cycle Dashboard</h1>
+
+	<section class="pane" id="input-variables">
+		<h2>Input variables</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>Variable</th>
+					<th>Start Value</th>
+					<th>End Value</th>
+					<th>Stepsize</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="var-name">T0 <span class="unit">K</span></td>
+					<td><input type="number" id="t0-start" value="196.65" step="any"></td>
+					<td><input type="number" id="t0-end"   value="236.65" step="any"></td>
+					<td><input type="number" id="t0-step"  value="10"     step="any"></td>
+				</tr>
+				<tr>
+					<td class="var-name">FAR <span class="unit">-</span></td>
+					<td><input type="number" id="far-start" value="0.015" step="any"></td>
+					<td><input type="number" id="far-end"   value="0.025" step="any"></td>
+					<td><input type="number" id="far-step"  value="0.005" step="any"></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<section class="pane" id="output-results">
+		<h2>Output Results</h2>
+		<div id="results-status">Not run yet.</div>
+		<table id="results-table" hidden>
+			<thead>
+				<tr>
+					<th>T0 (K)</th>
+					<th>FAR</th>
+					<th>F (kN)</th>
+					<th>TSFC (g/kN&middot;s)</th>
+					<th>&eta;th</th>
+					<th>&eta;p</th>
+					<th>&eta;0</th>
+					<th>Tt4 (K)</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+
+		<div class="chart-section" id="chart-section" hidden>
+			<h3>F (kN) vs FAR</h3>
+			<div class="chart-wrap">
+				<svg id="f-far-chart" viewBox="0 0 640 340"></svg>
+				<div class="chart-tooltip" id="chart-tooltip"></div>
+			</div>
+			<div class="chart-legend" id="chart-legend"></div>
+			<div class="chart-note" id="chart-note" hidden></div>
+		</div>
+	</section>
+
+	<button id="start-sim">Start Sim</button>
+
+	<script src="app.js"></script>
+</body>
+</html>
