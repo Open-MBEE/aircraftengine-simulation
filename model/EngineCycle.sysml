@@ -26,10 +26,15 @@ package AircraftEngineCycle {
 	     *    GasProperties) stays hidden, exactly as it is opaque to
 	     *    main.py.
 	     *
-	     * Standalone and illustrative: nothing executes this model.
+	     * Illustrative: nothing executes the station calcs or EngineCycle.
+	     * The one exception is CycleService at the end of the package, a
+	     * Functional Process Block (see FPBCore.sysml) bound to
+	     * main.run_cycle() through model metadata, which a Service Binding
+	     * Manager can invoke.
 	     */
 
 	private import ScalarValues::*;
+	private import FPBCore::*;
 
 	attribute pi : Real = 3.14159265358979323846;
 
@@ -576,5 +581,38 @@ package AircraftEngineCycle {
 
 	action cruiseCycle : EngineCycle {
 		in :>> design = cruiseDesignPoint;
+	}
+
+	// ====================================================================
+	// Python service binding -- FPB approach 2 (metadata): the FPB and its
+	// parameters are annotated with the Python function and keyword names
+	// that realize them, so a Service Binding Manager can read the
+	// annotations and call main.run_cycle() directly. Only T0 and FAR are
+	// exposed; every other run_cycle() argument keeps its main.py default
+	// (the DesignPoint values above).
+	// ====================================================================
+	action def CycleService :> FunctionalProcessBlock {
+		@ServiceBinding {
+			lang = "python";
+			module = "main";
+			function = "run_cycle";
+		}
+		in T0 : Real {                  // free-stream static temperature, K
+			@ParameterBinding { pythonName = "T0_override"; }
+		}
+		in FAR : Real {                 // fuel-air ratio of the core stream
+			@ParameterBinding { pythonName = "FAR"; }
+		}
+		out F : Real {                  // net thrust, N
+			@ParameterBinding { pythonName = "F"; }
+		}
+		out TSFC : Real {               // g/(kN s)
+			@ParameterBinding { pythonName = "TSFC"; }
+		}
+	}
+
+	action hotDayCruise : CycleService {
+		in :>> T0 = 231.65;             // ISA + 15 K at 40,000 ft
+		in :>> FAR = 0.02;
 	}
 }
