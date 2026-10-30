@@ -156,7 +156,9 @@ class ServiceBindingManager:
         except NotImplementedError as e:
             raise SbmError(f"the bound service is not implemented yet: {e}")
 
-        self._print_results(fqn, self._map_result(definition, names, result))
+        results = self._map_result(definition, names, result)
+        self._print_results(fqn, results)
+        return results          # {out param name: value}, for programmatic callers
 
     def approach_for(self, definition):
         if "ServiceBinding" in definition.metadata:

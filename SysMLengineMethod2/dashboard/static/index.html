@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Station 1 Dashboard</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<header>
+		<h1>Station 1 — Captured Stream Tube</h1>
+		<p class="subtitle">
+			FPB method 2 (metadata binding):
+			<code id="usage-fqn">…</code> → <code id="service-name">…</code>
+		</p>
+	</header>
+
+	<main>
+		<section class="pane" id="inputs-pane">
+			<div class="pane-head">
+				<h2>Input variables</h2>
+				<button id="reset" type="button">Reset to model values</button>
+			</div>
+			<div id="inputs"></div>
+		</section>
+
+		<section class="pane" id="outputs-pane">
+			<div class="pane-head">
+				<h2>Output variables</h2>
+				<span id="status" class="status">Loading model…</span>
+			</div>
+			<div id="outputs" class="tiles"></div>
+			<p class="formula">
+				A1 = &pi;/4 &middot; Do&sup2; &nbsp;&nbsp;&nbsp; &#7745;1 = &rho;0 &middot; u0 &middot; A1
+			</p>
+		</section>
+
+		<section class="pane wide" id="trace-pane">
+			<h2>Service Binding Manager trace</h2>
+			<pre id="trace"></pre>
+		</section>
+	</main>
+
+	<script src="app.js"></script>
+</body>
+</html>

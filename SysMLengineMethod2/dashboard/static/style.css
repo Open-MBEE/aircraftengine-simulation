@@ -1,0 +1,212 @@
+:root {
+	--bg: #f5f6f8;
+	--pane-bg: #ffffff;
+	--border: #d7dbe0;
+	--text: #1d2127;
+	--muted: #5b6372;
+	--accent: #2f6fed;
+	--accent-text: #ffffff;
+	--error: #c0392b;
+	--up: #1a7f4b;
+	--down: #b4472c;
+	--code-bg: #f0f2f5;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: #15171b;
+		--pane-bg: #1e2126;
+		--border: #343a42;
+		--text: #e7e9ec;
+		--muted: #9aa3b0;
+		--accent: #5b8def;
+		--accent-text: #0b1016;
+		--error: #ff6b5e;
+		--up: #4cc38a;
+		--down: #f08a6c;
+		--code-bg: #262a30;
+	}
+}
+
+* { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	padding: 24px 16px 48px;
+	background: var(--bg);
+	color: var(--text);
+	font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+header, main {
+	max-width: 960px;
+	margin: 0 auto;
+}
+
+h1 { font-size: 1.4rem; margin: 0 0 4px; }
+h2 { font-size: 1rem; margin: 0; }
+
+.subtitle {
+	margin: 0 0 20px;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+code {
+	font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+	font-size: 0.85em;
+	background: var(--code-bg);
+	padding: 1px 5px;
+	border-radius: 4px;
+}
+
+main {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+}
+
+@media (max-width: 760px) {
+	main { grid-template-columns: 1fr; }
+}
+
+.pane {
+	background: var(--pane-bg);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 16px;
+	min-width: 0;
+}
+
+.pane.wide { grid-column: 1 / -1; }
+
+.pane-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+/* ---- inputs ---------------------------------------------------------- */
+
+.input-row { margin-bottom: 18px; }
+.input-row:last-child { margin-bottom: 0; }
+
+.input-label {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+
+.input-label .name { font-weight: 600; }
+.input-label .desc { color: var(--muted); font-size: 0.85rem; }
+
+.input-controls {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.input-controls input[type="range"] {
+	flex: 1;
+	min-width: 0;
+	accent-color: var(--accent);
+}
+
+.input-controls input[type="number"] {
+	width: 120px;
+	padding: 6px 8px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--pane-bg);
+	color: var(--text);
+	font: inherit;
+	font-variant-numeric: tabular-nums;
+}
+
+.input-controls .unit {
+	width: 48px;
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+
+.model-value {
+	margin-top: 4px;
+	color: var(--muted);
+	font-size: 0.8rem;
+}
+
+.model-value.changed { color: var(--accent); }
+
+button {
+	padding: 6px 12px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--pane-bg);
+	color: var(--text);
+	font: inherit;
+	font-size: 0.85rem;
+	cursor: pointer;
+}
+
+button:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---- outputs --------------------------------------------------------- */
+
+.tiles {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.tile {
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 14px;
+}
+
+.tile .label { color: var(--muted); font-size: 0.85rem; }
+
+.tile .value {
+	font-size: 1.8rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	margin: 6px 0 2px;
+}
+
+.tile .value .unit {
+	font-size: 0.95rem;
+	font-weight: 400;
+	color: var(--muted);
+	margin-left: 4px;
+}
+
+.tile .delta { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tile .delta.up { color: var(--up); }
+.tile .delta.down { color: var(--down); }
+
+.formula {
+	margin: 16px 0 0;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.status { font-size: 0.85rem; color: var(--muted); }
+.status.error { color: var(--error); }
+
+/* ---- trace ----------------------------------------------------------- */
+
+#trace {
+	margin: 12px 0 0;
+	padding: 12px;
+	background: var(--code-bg);
+	border-radius: 6px;
+	font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	overflow-x: auto;
+	white-space: pre;
+}
