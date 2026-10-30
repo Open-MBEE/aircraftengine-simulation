@@ -21,6 +21,21 @@ python -m SysMLengineMethod2.sbm invoke AircraftEngineCycleFPB::cruise --set ver
 
 `cruise` reproduces `python main.py` (F = 16.83 kN, TSFC = 27.50 g/(kN·s)).
 
+## Dashboards
+
+Both run every simulation through the SBM (method 2) and read their inputs,
+model values and outputs from the model. Start from the repository root:
+
+```
+python SysMLengineMethod2/cycle_dashboard/server.py   # all stations  -> http://localhost:5002
+python SysMLengineMethod2/dashboard/server.py         # station 1     -> http://localhost:5001
+```
+
+The all-stations dashboard exposes only the user-modifiable inputs of
+`CycleService` (the design point and the optional `T0` override; run
+controls such as `verbose` are hidden and refused by the server) and shows
+performance plus every station's values, each with its change vs the model.
+
 ## Layout
 
 - [model/EngineCycleFPB.sysml](model/EngineCycleFPB.sysml) — `CycleService`,

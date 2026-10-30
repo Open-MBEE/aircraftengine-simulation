@@ -65,20 +65,81 @@ package AircraftEngineCycleFPB {
 		// print main.py's station-by-station report while running
 		in verbose : Boolean = false;
 
+		// every value run_cycle() returns, station by station (SI units:
+		// K, Pa, kg/m^3, m/s, m^2, kg/s, W, N)
+
+		// station 0 : free stream
+		out T0_used : Real {            // static temperature actually used, K
+			@ParameterBinding { pythonName = "T0"; }   // 'T0' is taken by the input
+		}
+		out p0 : Real;
+		out rho0 : Real;
+		out u0 : Real;
+		out Tt0 : Real;
+		out pt0 : Real;
+
+		// station 1 : captured stream tube
+		out A1 : Real;
+		out dotm1 : Real;               // captured air mass flow
+
+		// station 2 : compressor face
+		out A2 : Real;
+		out T2 : Real;
+		out p2 : Real;
+		out Ma2 : Real;
+		out Tt2 : Real;
+		out pt2 : Real;
+
+		// station 3 : compressor exit
+		out A3 : Real;
+		out T3 : Real;
+		out p3 : Real;
+		out Ma3 : Real;
+		out Tt3 : Real;
+		out pt3 : Real;
+		out Wcomp : Real;               // compressor power
+
+		// station 4 : combustor exit
+		out A4 : Real;
+		out T4 : Real;
+		out p4 : Real;
+		out Ma4 : Real;
+		out Tt4 : Real;                 // turbine inlet total temperature
+		out pt4 : Real;
+		out dotmf : Real;               // fuel flow
+
+		// station 5 : turbine exit
+		out Tt5 : Real;
+		out pt5 : Real;
+		out Wshaft : Real;              // shaft power
+
+		// station 7 : core nozzle throat
+		out A7 : Real;
+		out T7 : Real;
+		out p7 : Real;
+		out u7 : Real;
+
+		// station 9 : core nozzle exit
+		out A9 : Real;
+		out T9 : Real;
+		out p9 : Real;
+		out u9 : Real;
+
+		// station 3b : bypass nozzle exit
+		out A9b : Real;
+		out T9b : Real;
+		out u9b : Real;
+		out dotm_byp : Real;            // bypass mass flow
+
 		// performance
-		out F : Real;                   // net thrust, N
-		out F_core : Real;              // gross thrust, core, N
-		out F_byp : Real;               // gross thrust, bypass, N
-		out F_ram : Real;               // ram drag, N
+		out F : Real;                   // net thrust
+		out F_core : Real;              // gross thrust, core
+		out F_byp : Real;               // gross thrust, bypass
+		out F_ram : Real;               // ram drag
 		out TSFC : Real;                // thrust specific fuel consumption, g/(kN s)
 		out eta_th : Real;              // thermal efficiency
 		out eta_p : Real;               // propulsive efficiency
 		out eta_o : Real;               // overall efficiency
-
-		// key flows and temperatures
-		out dotm1 : Real;               // captured air mass flow, kg/s
-		out dotmf : Real;               // fuel flow, kg/s
-		out Tt4 : Real;                 // turbine inlet total temperature, K
 	}
 
 	// the main.py design point, every parameter at its default

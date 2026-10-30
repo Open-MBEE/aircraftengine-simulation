@@ -12,6 +12,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["SysMLengineMethod2/dashboard/server.py"],
       "port": 5001
+    },
+    {
+      "name": "cycle-dashboard",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["SysMLengineMethod2/cycle_dashboard/server.py"],
+      "port": 5002
     }
   ]
 }

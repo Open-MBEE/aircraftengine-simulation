@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Engine Cycle Dashboard</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<header>
+		<div>
+			<h1>Engine Cycle — All Stations</h1>
+			<p class="subtitle">
+				FPB method 2 (metadata binding):
+				<code id="usage-fqn">…</code> → <code id="service-name">…</code>
+			</p>
+		</div>
+		<div class="header-actions">
+			<span id="status" class="status">Loading model…</span>
+			<button id="reset" type="button">Reset to model values</button>
+		</div>
+	</header>
+
+	<div id="error-banner" class="error-banner" hidden></div>
+
+	<main>
+		<div id="inputs-col">
+			<section class="pane" id="variables-pane">
+				<h2>Variables <span id="variables-count" class="count"></span></h2>
+				<p class="hint">Design inputs ticked as <em>variable</em> — the ones you are exploring</p>
+				<div id="variables"></div>
+			</section>
+
+			<details class="pane collapsible" id="inputs-pane" open>
+				<summary><h2>Design inputs</h2></summary>
+				<p class="hint">User-modifiable parameters of <code>CycleService</code>; unticked inputs are held constant</p>
+				<div id="inputs"></div>
+			</details>
+		</div>
+
+		<section id="outputs-col">
+			<section class="pane">
+				<h2>Performance</h2>
+				<div id="perf" class="tiles"></div>
+			</section>
+
+			<details class="pane collapsible" id="stations-pane" open>
+				<summary><h2>Stations</h2></summary>
+				<div class="toolbar">
+					<button id="expand-all" type="button">Expand all</button>
+					<button id="collapse-all" type="button">Collapse all</button>
+				</div>
+				<div id="stations" class="stations"></div>
+			</details>
+
+			<details class="pane" id="trace-pane">
+				<summary>Service Binding Manager trace</summary>
+				<pre id="trace"></pre>
+			</details>
+		</section>
+	</main>
+
+	<script src="app.js"></script>
+</body>
+</html>
