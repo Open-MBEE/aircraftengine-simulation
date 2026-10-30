@@ -29,6 +29,11 @@ python -m SysMLengineMethod2.sbm invoke AircraftEngineCycleFPB::cruise --set ver
   unbound means standard atmosphere), `verbose` (default `false`), and 11
   `out` parameters (thrust breakdown, TSFC, efficiencies, flows, Tt4). Three
   usages: `cruise`, `hotDayCruise` (ISA + 15 K), `highPressureRatioCruise`.
+- [model/Station1FPB.sysml](model/Station1FPB.sysml) — station 1 only
+  (captured stream tube): `CapturedStreamTube`, bound to
+  `main.captured_stream_tube(rho0, u0, Do)` → `A1`, `dotm1`, with usage
+  `cruiseStation1` (design-point station-0 values). Run with
+  `python -m SysMLengineMethod2.sbm invoke AircraftEngineStation1FPB::cruiseStation1`.
 - [model/FPBCore.sysml](model/FPBCore.sysml) — FPB library (base action def
   and the binding metadata defs), copied from fpb-demo.
 - [sbm/](sbm/) — copy of fpb-demo's mock SBM, extended with `--model-dir`

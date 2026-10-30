@@ -52,6 +52,18 @@ _g = gt.Gas()
 _a = gt.Atmosphere()
 
 
+def captured_stream_tube( rho0, u0, Do ):
+    """Station 1: the engine swallows the stream tube that fits the
+    compressor face; far upstream it is still at free-stream conditions.
+    Returns the capture area A1 in m² and the captured mass flow dotm1 in
+    kg/s. Shared by run_cycle() and the station-1 FPB
+    (SysMLengineMethod2/model/Station1FPB.sysml)."""
+
+    A1 = 0.25 * math.pi * Do**2
+    dotm1 = rho0 * u0 * A1
+    return dict( A1=A1, dotm1=dotm1 )
+
+
 def run_cycle(
     alt_ft=40e3,        # cruise altitude in ft
     Ma0=0.85,           # cruise Mach number
@@ -114,10 +126,8 @@ def run_cycle(
     # ------------------------------------------------------------------------
     if verbose : station( 1, "captured stream tube" )
 
-    # the engine swallows the stream tube that fits the compressor face; far
-    # upstream it is still at free-stream conditions
-    A1 = 0.25 * math.pi * Do**2
-    dotm1 = rho0 * u0 * A1
+    s1 = captured_stream_tube( rho0, u0, Do )
+    A1, dotm1 = s1[ "A1" ], s1[ "dotm1" ]
 
     if verbose :
         row( "A",  A1,    "m²" )
